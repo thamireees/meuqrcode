@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forca Botânica - Partes da Flor</title>
+    <style>
+        /* 1. CONFIGURAÇÕES GERAIS E TEMA */
+        :root {
+            --primary: #9333ea; /* Roxo vibrante */
+            --secondary: #d8b4fe; /* Lilás claro */
+            --bg: #faf5ff; /* Fundo quase branco/roxo */
+            --text: #4c1d95; /* Roxo escuro */
+            --white: #ffffff;
+            --accent: #ec4899; /* Rosa pink */
+            --wrong: #ef4444;
+            --correct: #22c55e;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            user-select: none; /* Evita selecionar texto ao clicar rápido */
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 2. LAYOUT PRINCIPAL */
+        #app {
+            width: 100%;
+            max-width: 600px;
+            height: 90vh;
+            background: var(--white);
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.2);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 4px solid var(--secondary);
+        }
+
+        /* 3. TELAS (Start, Game, End) */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: var(--white);
+            transition: transform 0.4s ease-in-out;
+            z-index: 10;
+        }
+
+        .hidden {
+            transform: translateY(100%); /* Esconde deslizando para baixo */
+            pointer-events: none;
+        }
+
+        .active {
+            transform: translateY(0);
+            z-index: 20;
+        }
+
+        /* 4. TELA INICIAL */
+        #start-screen h1 {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .flower-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .btn-start {
+            background: var(--primary);
+            color: white;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(147, 51, 234, 0.4);
+            transition: transform 0.2s;
+            margin-top: 30px;
+        }
+
+        .btn-start:hover { transform: scale(1.05); }
+
+        /* 5. TELA DE JOGO */
+        #game-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 20px;
+            background: var(--secondary);
+            border-radius: 0 0 20px 20px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .status-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .status-label { font-size: 0.8rem; opacity: 0.8; }
+        .status-value { font-size: 1.2rem; }
+
+        /* Área Visual (Forca/Imagem) */
+        #visual-area {
+            width: 120px;
+            height: 120px;
+            background: #f3e8ff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            border: 4px solid var(--primary);
+        }
+
+        /* Dica */
+        #hint-box {
+            background: #fffbeb;
+            border: 1px solid #fcd34d;
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            width: 90%;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #hint-text { font-style: italic; color: #b45309; display: none; }
+        
+        .btn-hint {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        /* Palavra */
+        #word-display {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .letter-slot {
+            width: 40px;
+            height: 50px;
+            border-bottom: 4px solid var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: var(--text);
+        }
+
+        /* Teclado */
+        #keyboard {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: center;
+            width: 100%;
+            padding: 0 10px;
+        }
+
+        .key {
+            width: 38px;
+            height: 45px;
+            background: white;
+            border: 2px solid var(--secondary);
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .key:hover { background: var(--bg); }
+        .key.used { background: #e5e7eb; color: #9ca3af; border-color: #e5e7eb; cursor: not-allowed; }
+        .key.correct { background: var(--correct); color: white; border-color: var(--correct); }
+        .key.wrong { background: var(--wrong); color: white; border-color: var(--wrong); }
+
+        /* 6. TELA FINAL */
+        #end-screen h2 { color: var(--primary); font-size: 2.5rem; }
+        .final-score { font-size: 4rem; color: var(--accent); font-weight: bold; margin: 20px 0; }
+        
+        /* Responsivo Mobile */
+        @media (max-width: 400px) {
+            .key { width: 30px; height: 40px; font-size: 0.9rem; }
+            #word-display { gap: 5px; }
+            .letter-slot { width: 30px; height: 40px; font-size: 1.5rem; }
+        }
+
+        /* Notificação (Toast) */
+        #toast {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        
+        <!-- TELA INICIAL -->
+        <div id="start-screen" class="screen active">
+            <div class="flower-icon">🌸</div>
+            <h1>Forca<br>Botânica</h1>
+            <p style="color: #6b7280; margin-bottom: 20px;">8º Ano - Ciências</p>
+            <div style="text-align: left; background: #faf5ff; padding: 20px; border-radius: 15px; width: 80%;">
+                <p>📋 <strong>10 Fases</strong> de vocabulário.</p>
+                <p>💡 <strong>Dicas</strong> custam 20 pontos.</p>
+                <p>❤️ <strong>Erros</strong> tiram 10 pontos.</p>
+            </div>
+            <button class="btn-start" onclick="startGame()">JOGAR</button>
+        </div>
+
+        <!-- TELA DE JOGO -->
+        <div id="game-screen" class="screen hidden">
+            <div id="game-header">
+                <div class="status-box">
+                    <span class="status-label">FASE</span>
+                    <span class="status-value"><span id="level-display">1</span>/10</span>
+                </div>
+                <div class="status-box">
+                    <span class="status-label">PONTOS</span>
+                    <span class="status-value" id="score-display">0</span>
+                </div>
+                <div class="status-box">
+                    <span class="status-label">VIDAS</span>
+                    <span class="status-value" style="color: var(--accent);">
+                        <i class="fa-solid fa-heart"></i> <span id="lives-display">5</span>
+                    </span>
+                </div>
+            </div>
+
+            <div id="visual-area">🌺</div>
+
+            <div id="hint-box">
+                <button class="btn-hint" id="btn-hint" onclick="showHint()">
+                    <i class="fa-solid fa-lightbulb"></i> Ver Dica (-20 pts)
+                </button>
+                <span id="hint-text">Dica aqui</span>
+            </div>
+
+            <div id="word-display">
+                <!-- Letras aparecem aqui -->
+            </div>
+
+            <div id="keyboard">
+                <!-- Teclas geradas via JS -->
+            </div>
+
+            <div id="toast">Mensagem</div>
+        </div>
+
+        <!-- TELA FINAL -->
+        <div id="end-screen" class="screen hidden">
+            <div class="flower-icon">🏆</div>
+            <h2>Fim de Jogo!</h2>
+            <p>Sua pontuação final foi:</p>
+            <div class="final-score" id="final-score">0</div>
+            <p id="final-msg" style="text-align: center; margin-bottom: 20px; padding: 0 20px;">Mensagem de feedback</p>
+            <button class="btn-start" onclick="location.reload()">JOGAR NOVAMENTE</button>
+        </div>
+
+    </div>
+
+    <!-- Audio Context (Sintetizador Simples) -->
+    <script>
+        // --- BANCO DE DADOS (10 PALAVRAS) ---
+        const levels = [
+            { word: "PETALA", hint: "Parte colorida da flor que atrai polinizadores.", icon: "🌹" },
+            { word: "RAIZ", hint: "Fixa a planta no solo e absorve água.", icon: "🥕" },
+            { word: "CAULE", hint: "Sustenta as folhas e flores, transporta seiva.", icon: "🎋" },
+            { word: "SEPALA", hint: "Folha verde pequena que protege o botão da flor.", icon: "🍃" },
+            { word: "ESTAME", hint: "Estrutura masculina que produz o pólen.", icon: "♂️" },
+            { word: "PISTILO", hint: "Estrutura feminina da flor (Gineceu).", icon: "♀️" },
+            { word: "OVULO", hint: "Célula reprodutiva feminina guardada no ovário.", icon: "🥚" },
+            { word: "POLEN", hint: "Pó amarelo produzido na antera.", icon: "✨" },
+            { word: "NECTAR", hint: "Líquido doce que atrai abelhas e beija-flores.", icon: "🍯" },
+            { word: "FRUTO", hint: "O que o ovário vira após a fecundação (protege a semente).", icon: "🍎" }
+        ];
+
+        // --- ESTADO DO JOGO ---
+        let currentLevel = 0;
+        let score = 0;
+        let lives = 5;
+        let guessedLetters = [];
+        let hintUsed = false;
+        let gameActive = false;
+
+        // --- ÁUDIO (Web Audio API) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            if (type === 'correct') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2);
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.2);
+            } else if (type === 'win') {
+                // Melodia simples
+                playNote(523.25, 0);
+                playNote(659.25, 0.1);
+                playNote(783.99, 0.2);
+            }
+        }
+
+        function playNote(freq, delay) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime + delay);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + delay + 0.2);
+            osc.start(audioCtx.currentTime + delay);
+            osc.stop(audioCtx.currentTime + delay + 0.2);
+        }
+
+        // --- LÓGICA DO JOGO ---
+
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.remove('hidden');
+            document.getElementById('game-screen').classList.add('active');
+            
+            score = 0;
+            currentLevel = 0;
+            updateScoreUI();
+            
+            // Gerar teclado uma vez
+            generateKeyboard();
+            loadLevel();
+        }
+
+        function generateKeyboard() {
+            const keyboard = document.getElementById('keyboard');
+            keyboard.innerHTML = '';
+            const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZÇ".split(""); // Inclui Ç
+            
+            letters.forEach(letter => {
+                const btn = document.createElement('button');
+                btn.className = 'key';
+                btn.textContent = letter;
+                btn.setAttribute('data-key', letter);
+                btn.onclick = () => handleGuess(letter);
+                keyboard.appendChild(btn);
+            });
+        }
+
+        function loadLevel() {
+            if (currentLevel >= levels.length) {
+                endGame();
+                return;
+            }
+
+            const levelData = levels[currentLevel];
+            gameActive = true;
+            lives = 5;
+            hintUsed = false;
+            guessedLetters = [];
+
+            // UI Reset
+            document.getElementById('level-display').textContent = currentLevel + 1;
+            document.getElementById('lives-display').textContent = lives;
+            document.getElementById('visual-area').textContent = levelData.icon;
+            
+            // Hint Reset
+            document.getElementById('hint-text').style.display = 'none';
+            document.getElementById('btn-hint').style.display = 'block';
+
+            // Keyboard Reset
+            document.querySelectorAll('.key').forEach(key => {
+                key.className = 'key';
+                key.disabled = false;
+            });
+
+            renderWord();
+        }
+
+        function renderWord() {
+            const wordContainer = document.getElementById('word-display');
+            wordContainer.innerHTML = '';
+            const word = levels[currentLevel].word;
+            
+            let won = true;
+
+            word.split('').forEach(letter => {
+                const slot = document.createElement('div');
+                slot.className = 'letter-slot';
+                
+                if (guessedLetters.includes(letter)) {
+                    slot.textContent = letter;
+                    slot.style.borderBottomColor = 'var(--correct)';
+                } else {
+                    slot.textContent = '';
+                    won = false;
+                }
+                wordContainer.appendChild(slot);
+            });
+
+            if (won && gameActive) {
+                gameActive = false;
+                playSound('win');
+                score += (lives * 10); // Bônus por vidas restantes
+                score += 50; // Bônus por passar de fase
+                showToast(`Fase Completa! +${(lives * 10) + 50} pts`);
+                updateScoreUI();
+                
+                setTimeout(() => {
+                    currentLevel++;
+                    loadLevel();
+                }, 1500);
+            }
+        }
+
+        function handleGuess(letter) {
+            if (!gameActive || guessedLetters.includes(letter)) return;
+
+            guessedLetters.push(letter);
+            const word = levels[currentLevel].word;
+            const btn = document.querySelector(`.key[data-key="${letter}"]`);
+            
+            btn.classList.add('used');
+            btn.disabled = true;
+
+            if (word.includes(letter)) {
+                btn.classList.add('correct');
+                playSound('correct');
+                score += 10;
+                renderWord();
+            } else {
+                btn.classList.add('wrong');
+                playSound('wrong');
+                lives--;
+                score = Math.max(0, score - 5); // Perde 5 pts por erro
+                document.getElementById('lives-display').textContent = lives;
+                
+                // Animação de tremor na tela se errar
+                const app = document.getElementById('app');
+                app.style.transform = "translateX(5px)";
+                setTimeout(() => app.style.transform = "translateX(0)", 100);
+                setTimeout(() => {
+                    app.style.transform = "translateX(-5px)";
+                    setTimeout(() => app.style.transform = "translateX(0)", 100);
+                }, 100);
+
+                if (lives <= 0) {
+                    gameOver();
+                }
+            }
+            updateScoreUI();
+        }
+
+        function showHint() {
+            if (score < 20) {
+                showToast("Pontos insuficientes (Precisa de 20)");
+                return;
+            }
+            if (hintUsed) return;
+
+            score -= 20;
+            updateScoreUI();
+            hintUsed = true;
+            
+            const hintBox = document.getElementById('hint-text');
+            hintBox.textContent = levels[currentLevel].hint;
+            hintBox.style.display = 'block';
+            document.getElementById('btn-hint').style.display = 'none';
+        }
+
+        function updateScoreUI() {
+            document.getElementById('score-display').textContent = score;
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.opacity = 1;
+            setTimeout(() => t.style.opacity = 0, 2000);
+        }
+
+        function gameOver() {
+            gameActive = false;
+            showToast("Você perdeu! Reiniciando fase...");
+            setTimeout(() => {
+                score = Math.max(0, score - 50); // Penalidade
+                updateScoreUI();
+                loadLevel(); // Reinicia a MESMA fase
+            }, 2000);
+        }
+
+        function endGame() {
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('end-screen').classList.remove('hidden');
+            document.getElementById('end-screen').classList.add('active');
+            
+            document.getElementById('final-score').textContent = score;
+            
+            const msgEl = document.getElementById('final-msg');
+            if (score > 800) msgEl.textContent = "Incrível! Você é um Mestre da Botânica! 🌿🏆";
+            else if (score > 500) msgEl.textContent = "Muito bom! Conhecimento sólido! 🌸";
+            else msgEl.textContent = "Bom esforço! Continue estudando as flores! 🌱";
+        }
+
+    </script>
+</body>
+</html>
